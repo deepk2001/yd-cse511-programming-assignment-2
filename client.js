@@ -1,9 +1,10 @@
 const { io } = require("socket.io-client");
 
 const args = process.argv.slice(2);
-
+const { v4 } = require('uuid')
 const GATEWAY_URL = "http://localhost:3005";
 
+const clientId = v4()
 const socket = io(GATEWAY_URL);
 console.log("Client connected to gateway");
 socket.on("connect", () => {
@@ -15,7 +16,15 @@ socket.on("connect", () => {
             operation: {
                 type: operationType,
                 args,
-            }
+            },
+            clientId,
         })
     }
+    socket.on("gateway-operation-successful", (data) => {
+        console.log("clientIDs", clientId, data);
+        if (data?.clientId === clientId) {
+            console.log("recieved confirmation ack");
+            socket.disconnect();
+        }
+    })
 })

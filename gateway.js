@@ -2,52 +2,25 @@ const { io } = require('socket.io-client');
 const { Server } = require('socket.io');
 const { validateOperation, executeInstruction } = require("./utils.js");
 const isEmpty = require('lodash/isEmpty');
+const { gatewayPort, serverPorts, NUM_SERVERS, QUORUM_SIZE } = require("./constants.js");
 
 const args = process.argv.slice(2);
-const numberofServers = args[0];
 
-const serverPorts = ["3000", "3001", "3002", "3003", "3004"];
-const gatewayPort = "3005";
-const isSystemInitialized = false;
 const gatewayServer = new Server(gatewayPort);
-const savedData = {}
-const EventEmitter = require('node:events');
+const savedData = {};
 
-/* class ObservableArray extends EventEmitter {
-    constructor() {
-        super();
-        this.data = [];
-    }
+const serverConnections = []
 
-    enqueue(item) {
-        this.data.push(item);
-        if (this.data.length === 1) {
-            // Manually emit a custom event when the condition is met
-            this.emit('nonEmpty');
-        }
-        this.emit('change', this.data);
-    }
-
-    dequeue() {
-        const item = this.data.shift();
-        return item;
-    }
+for (i = 0; i < NUM_SERVERS; i++) {
+    const SERVER_URL = `http://localhost:${serverPorts[i]}`;
+    serverConnections.push(io(SERVER_URL));
+    console.log("Connected to server number: ", i + 1, " at port : ", serverPorts[i]);
 }
 
-const instructionQueue = new ObservableArray(); */
 console.log(`Gateway Server listening on port ${gatewayPort}`);
 gatewayServer.on('connection', (socket) => {
     console.log('a user connected');
     // write methods to handle the connection
-    socket.on("client-message-system-init", (data) => {
-        if (!isSystemInitialized) {
-            console.log("initializing servers");
-            // logic for initializing servers like creating common timestamp
-            isSystemInitialized = true;
-        } else {
-            console.log("system already initialized");
-        }
-    })
     socket.on("client-message-issue-operation", (data) => {
         console.log("data from client", data)
         //validate operation 
@@ -58,16 +31,18 @@ gatewayServer.on('connection', (socket) => {
             );
             return;
         }
-        // add operation to queue.
         executeInstruction(data?.operation, savedData);
         console.log(savedData);
-        /*         instructionQueue.enqueue({
-                    socketId: socket?.id,
-                    operation: data?.operation
-                })
-                console.log("instruction Queue: ", instructionQueue) */
+        serverConnections?.[0]?.emit("gateway-operation-request", data);
+    })
+    serverConnections?.[0]?.on("server-operation-ack", (data) => {
+        console.log("recieved server-operation-ack with data :", data);
+        console.log("emitting client script disconnect");
+        socket.emit("gateway-operation-successful", data)
     })
 });
+
+
 
 gatewayServer.on('disconnect', (socket) => {
     console.log('disconnected ID: ', socket?.id);
