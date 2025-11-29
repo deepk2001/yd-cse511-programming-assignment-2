@@ -12,6 +12,8 @@ const SOCKET_EVENTS = {
     GATEWAY_INITIALIZE_SERVER_SOCKETS: "gateway-init-server-connections",
     SERVER_OPERATION_REQUEST: "server-operation-request",
     SERVER_OPERATION_RESPONSE_ACK: "server-operation-response-ack",
+    SERVER_REQUEST_TIMESTAMP: "server-request-timestamp",
+    SERVER_RESPONSE_TIMESTAMP_ACK: "server-response-timestamp-ack"
 }
 module.exports = {
     NUM_SERVERS,

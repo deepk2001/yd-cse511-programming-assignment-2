@@ -1,6 +1,6 @@
 const { io } = require('socket.io-client');
 const { Server } = require('socket.io');
-const { validateOperation, executeInstruction } = require("./utils.js");
+const { validateOperation } = require("./utils.js");
 const isEmpty = require('lodash/isEmpty');
 const { gatewayPort, serverPorts, NUM_SERVERS, QUORUM_SIZE, SOCKET_EVENTS } = require("./constants.js");
 
@@ -33,7 +33,7 @@ gatewayServer.on('connection', (socket) => {
             );
             return;
         }
-        const randomSelectedServerIndex = Math.floor(Math.random()) % NUM_SERVERS;
+        const randomSelectedServerIndex = Math.floor(Math.random() * NUM_SERVERS);
         console.log("raising request to server ", randomSelectedServerIndex + 1);
         serverConnections?.[randomSelectedServerIndex]?.emit(SOCKET_EVENTS.GATEWAY_OPERATION_REQUEST, data);
     });

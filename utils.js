@@ -18,7 +18,8 @@ const executeInstruction = (operation, savedData) => {
         case "PUT":
             const keyToPut = operation?.args[0];
             const value = operation?.args[1];
-            savedData[keyToPut] = value;
+            const timestamp = operation?.timestamp;
+            savedData[keyToPut] = { value, timestamp };
             return;
         default:
             return;
@@ -30,7 +31,6 @@ const waitForQuorum = (sockets, quorumSize, requestEvent, data, responseEvent) =
 
     // Returns a Promise that resolves when responses.length === quorumSize
     return new Promise((resolve) => {
-        // --- 1. Define the Listener/Check Logic ---
         const handleResponse = (response) => {
             // Store the response
             responses.push(response);
@@ -44,7 +44,6 @@ const waitForQuorum = (sockets, quorumSize, requestEvent, data, responseEvent) =
         };
 
 
-        // --- 2. Emit Requests and Attach Listeners ---
         sockets.forEach(socket => {
             // Attach the response handler to each socket
             socket.on(responseEvent, handleResponse);
@@ -55,9 +54,28 @@ const waitForQuorum = (sockets, quorumSize, requestEvent, data, responseEvent) =
     });
 }
 
+const calculateNewTimestamp = (quorumTimestamps, localTimestampValue) => {
+    const timestamps = [localTimestampValue];
+    quorumTimestamps.forEach((quorumTimestampObj) => {
+        timestamps.push(quorumTimestampObj.timestamp);
+    });
+    return Math.max(...timestamps) + 1;
+}
+
+const getLatestValue = (responseData) => {
+    let latestValue = { timestamp: 0 };
+    responseData?.forEach((responseValue) => {
+        if (responseValue.timestamp > latestValue.timestamp) {
+            latestValue = responseValue;
+        }
+    })
+    return latestValue;
+}
 
 module.exports = {
     validateOperation,
     executeInstruction,
-    waitForQuorum
+    waitForQuorum,
+    calculateNewTimestamp,
+    getLatestValue
 };

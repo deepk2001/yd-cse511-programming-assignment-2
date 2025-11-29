@@ -4,7 +4,9 @@
   "description": "This is the project 2 submission for Team YD, for cse-511",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "abd:server": "node server.js",
+    "abd:client": "node client.js",
+    "abd:gateway": "node gateway.js"
   },
   "author": "",
   "license": "ISC",
