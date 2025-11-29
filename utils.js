@@ -25,8 +25,39 @@ const executeInstruction = (operation, savedData) => {
     }
 }
 
+const waitForQuorum = (sockets, quorumSize, requestEvent, data, responseEvent) => {
+    const responses = [];
+
+    // Returns a Promise that resolves when responses.length === quorumSize
+    return new Promise((resolve) => {
+        // --- 1. Define the Listener/Check Logic ---
+        const handleResponse = (response) => {
+            // Store the response
+            responses.push(response);
+            // Check if the quorum is reached (Non-blocking check)
+            if (responses.length === quorumSize) {
+                // Quorum reached!
+                console.log("Quorum reached");
+                // 2. Resolve the Promise 
+                resolve(responses);
+            }
+        };
+
+
+        // --- 2. Emit Requests and Attach Listeners ---
+        sockets.forEach(socket => {
+            // Attach the response handler to each socket
+            socket.on(responseEvent, handleResponse);
+            // Send the request
+            socket.emit(requestEvent, data);
+        });
+
+    });
+}
+
 
 module.exports = {
     validateOperation,
-    executeInstruction
+    executeInstruction,
+    waitForQuorum
 };

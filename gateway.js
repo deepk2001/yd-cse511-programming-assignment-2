@@ -2,12 +2,9 @@ const { io } = require('socket.io-client');
 const { Server } = require('socket.io');
 const { validateOperation, executeInstruction } = require("./utils.js");
 const isEmpty = require('lodash/isEmpty');
-const { gatewayPort, serverPorts, NUM_SERVERS, QUORUM_SIZE } = require("./constants.js");
-
-const args = process.argv.slice(2);
+const { gatewayPort, serverPorts, NUM_SERVERS, QUORUM_SIZE, SOCKET_EVENTS } = require("./constants.js");
 
 const gatewayServer = new Server(gatewayPort);
-const savedData = {};
 
 const serverConnections = []
 
@@ -17,41 +14,34 @@ for (i = 0; i < NUM_SERVERS; i++) {
     console.log("Connected to server number: ", i + 1, " at port : ", serverPorts[i]);
 }
 
+serverConnections.forEach((serverConnection) => {
+    serverConnection.emit(SOCKET_EVENTS.GATEWAY_INITIALIZE_SERVER_SOCKETS, {});
+    console.log("initialized all server connections.")
+})
+
 console.log(`Gateway Server listening on port ${gatewayPort}`);
 gatewayServer.on('connection', (socket) => {
     console.log('a user connected');
-    // write methods to handle the connection
-    socket.on("client-message-issue-operation", (data) => {
+    // handling client and server connections
+    socket.on(SOCKET_EVENTS.CLIENT_ISSUE_OPERATION, (data) => {
         console.log("data from client", data)
-        //validate operation 
+        //validate operation at the gateway.
         if (isEmpty(data?.operation) || !validateOperation(data?.operation)) {
             socket.emit(
-                "gateway-operation-validation-failed",
-                { status: "400", message: "Incorrect Operation definition", operation: data?.operation }
+                SOCKET_EVENTS.GATEWAY_OPERATION_VALIDATION_ERROR,
+                { status: "400", message: "Incorrect Operation definition", clientId: data?.clientId }
             );
             return;
         }
-        executeInstruction(data?.operation, savedData);
-        console.log(savedData);
-        serverConnections?.[0]?.emit("gateway-operation-request", data);
-    })
-    serverConnections?.[0]?.on("server-operation-ack", (data) => {
-        console.log("recieved server-operation-ack with data :", data);
-        console.log("emitting client script disconnect");
-        socket.emit("gateway-operation-successful", data)
-    })
-});
-
-
-
-gatewayServer.on('disconnect', (socket) => {
-    console.log('disconnected ID: ', socket?.id);
-});
-
-gatewayServer.on('error', (error) => {
-    console.log('error', error);
-});
-
-gatewayServer.on('message', (message) => {
-    console.log('message', message);
+        const randomSelectedServerIndex = Math.floor(Math.random()) % NUM_SERVERS;
+        console.log("raising request to server ", randomSelectedServerIndex + 1);
+        serverConnections?.[randomSelectedServerIndex]?.emit(SOCKET_EVENTS.GATEWAY_OPERATION_REQUEST, data);
+    });
+    serverConnections.forEach((serverConnection, index) => {
+        serverConnection.on(SOCKET_EVENTS.SERVER_OPERATION_ACK, (data) => {
+            console.log("recieved server-operation-ack with data :", data, " from server ", index + 1);
+            console.log("emitting client script disconnect");
+            socket.emit(SOCKET_EVENTS.GATEWAY_RESPONSE_OPERATION_SUCCESS, data);
+        })
+    });
 });
