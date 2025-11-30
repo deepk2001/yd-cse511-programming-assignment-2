@@ -19,7 +19,10 @@ const executeInstruction = (operation, savedData) => {
             const keyToPut = operation?.args[0];
             const value = operation?.args[1];
             const timestamp = operation?.timestamp;
-            savedData[keyToPut] = { value, timestamp };
+            const currentValueTimestamp = savedData[keyToPut]?.timestamp || 0;
+            if (timestamp > currentValueTimestamp) {
+                savedData[keyToPut] = { value, timestamp };
+            }
             return;
         default:
             return;
@@ -54,19 +57,19 @@ const waitForQuorum = (sockets, quorumSize, requestEvent, data, responseEvent) =
     });
 }
 
-const calculateNewTimestamp = (quorumTimestamps, localTimestampValue) => {
-    const timestamps = [localTimestampValue];
+const calculateNewTimestamp = (quorumTimestamps) => {
+    const timestamps = [];
     quorumTimestamps.forEach((quorumTimestampObj) => {
         timestamps.push(quorumTimestampObj.timestamp);
     });
     return Math.max(...timestamps) + 1;
 }
 
-const getLatestValue = (responseData) => {
+const getLatestValue = (responseData, dataKey) => {
     let latestValue = { timestamp: 0 };
     responseData?.forEach((responseValue) => {
-        if (responseValue.timestamp > latestValue.timestamp) {
-            latestValue = responseValue;
+        if (responseValue[dataKey].timestamp > latestValue.timestamp) {
+            latestValue = responseValue[dataKey];
         }
     })
     return latestValue;
