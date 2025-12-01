@@ -11,7 +11,7 @@ console.log("Client connected to gateway");
 socket.on("connect", () => {
     console.log(`✅ Connected to server at ${GATEWAY_URL}`);
     if (args.length >= 2) {
-        console.log("here")
+        console.log("here");
         const operationType = args.shift();
         socket.emit(SOCKET_EVENTS.CLIENT_ISSUE_OPERATION, {
             operation: {

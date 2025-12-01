@@ -66,9 +66,9 @@ const calculateNewTimestamp = (quorumTimestamps) => {
 }
 
 const getLatestValue = (responseData, dataKey) => {
-    let latestValue = { timestamp: 0 };
+    let latestValue = { timestamp: 0, value: undefined };
     responseData?.forEach((responseValue) => {
-        if (responseValue[dataKey].timestamp > latestValue.timestamp) {
+        if (responseValue?.[dataKey]?.timestamp > latestValue.timestamp) {
             latestValue = responseValue[dataKey];
         }
     })
