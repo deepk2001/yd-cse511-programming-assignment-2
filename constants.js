@@ -1,4 +1,4 @@
-const NUM_SERVERS = 5;
+const NUM_SERVERS = 1;
 const QUORUM_SIZE = Math.ceil(NUM_SERVERS / 2) // simplified as number of servers is always odd. (2f + 1)
 const serverPorts = ["3000", "3001", "3002", "3003", "3004"];
 const gatewayPort = "3005";
@@ -13,7 +13,9 @@ const SOCKET_EVENTS = {
     SERVER_OPERATION_REQUEST: "server-operation-request",
     SERVER_OPERATION_RESPONSE_ACK: "server-operation-response-ack",
     SERVER_REQUEST_TIMESTAMP: "server-request-timestamp",
-    SERVER_RESPONSE_TIMESTAMP_ACK: "server-response-timestamp-ack"
+    SERVER_RESPONSE_TIMESTAMP_ACK: "server-response-timestamp-ack",
+    BLOCKING_SERVER_OPERATION_REQUEST: "blocking-server-operation-request",
+    BLOCKING_SERVER_OPERATION_RESPONSE_ACK: "blocking-server-operation-response-ack",
 }
 module.exports = {
     NUM_SERVERS,

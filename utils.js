@@ -75,10 +75,18 @@ const getLatestValue = (responseData, dataKey) => {
     return latestValue;
 }
 
+const releaseMutex = (release) => {
+    return new Promise(resolve => setTimeout(() => {
+        release();
+        resolve();
+    }, 100));
+}
+
 module.exports = {
     validateOperation,
     executeInstruction,
     waitForQuorum,
     calculateNewTimestamp,
-    getLatestValue
+    getLatestValue,
+    releaseMutex
 };

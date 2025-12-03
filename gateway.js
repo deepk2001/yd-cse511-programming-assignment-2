@@ -33,9 +33,6 @@ gatewayServer.on('connection', (socket) => {
             );
             return;
         }
-        const randomSelectedServerIndex = Math.floor(Math.random() * NUM_SERVERS);
-        console.log("raising request to server ", randomSelectedServerIndex + 1);
-        /* serverConnections?.[randomSelectedServerIndex]?.emit(SOCKET_EVENTS.GATEWAY_OPERATION_REQUEST, data); */
         const quorumTimestamps = await waitForQuorum(
             serverConnections,
             QUORUM_SIZE,

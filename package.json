@@ -6,11 +6,13 @@
   "scripts": {
     "abd:server": "node server.js",
     "abd:client": "node client.js",
-    "abd:gateway": "node gateway.js"
+    "abd:gateway": "node gateway.js",
+    "abd:gateway-blocking": "node gateway-blocking.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "async-mutex": "^0.5.0",
     "express": "^5.1.0",
     "lodash": "^4.17.21",
     "socket.io": "^4.8.1",

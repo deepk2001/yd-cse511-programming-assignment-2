@@ -122,7 +122,7 @@ void worker_thread(int thread_id, const std::vector<std::string> &operations,
 
 // Main Execution Logic
 int main() {
-  const std::string INPUT_FILE_PATH = "tests/testcase3/input.txt";
+  const std::string INPUT_FILE_PATH = "tests/testcase1/input.txt";
   const int NUM_THREADS = 16;
 
   std::vector<std::string> all_operations;
