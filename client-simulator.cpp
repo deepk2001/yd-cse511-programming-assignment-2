@@ -121,8 +121,12 @@ void worker_thread(int thread_id, const std::vector<std::string> &operations,
 }
 
 // Main Execution Logic
-int main() {
-  const std::string INPUT_FILE_PATH = "tests/testcase1/input.txt";
+int main(int argc, char *argv[]) {
+  std::string INPUT_FILE_PATH = "tests/testcase1/input.txt";
+  if (argc >= 2 && argv[1] != nullptr) {
+    INPUT_FILE_PATH = std::string(argv[1]);
+    std::cout << "Using input file: " << argv[1] << std::endl;
+  }
   const int NUM_THREADS = 16;
 
   std::vector<std::string> all_operations;
